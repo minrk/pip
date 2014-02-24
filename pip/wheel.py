@@ -455,6 +455,8 @@ class Wheel(object):
         re.VERBOSE
     )
 
+    osx_plat_re = re.compile(r"(macosx_\d+_\d+)_(.+)")
+
     def __init__(self, filename):
         """
         :raises InvalidWheelFilename: when the filename is invalid for a wheel
@@ -471,13 +473,35 @@ class Wheel(object):
         self.version = wheel_info.group('ver').replace('_', '-')
         self.pyversions = wheel_info.group('pyver').split('.')
         self.abis = wheel_info.group('abi').split('.')
-        self.plats = wheel_info.group('plat').split('.')
+        self.plats = self._process_plats(wheel_info.group('plat').split('.'))
 
         # All the tag combinations from this file
         self.file_tags = set(
             (x, y, z) for x in self.pyversions
             for y in self.abis for z in self.plats
         )
+
+    def _process_plats(self, plats):
+        """
+        Process hybrid platform tags into their component parts.
+
+        Currently only affects OS X multiarch tags (intel, universal).
+        """
+        new_plats = []
+        for plat in plats:
+            new_plats.append(plat)
+            m = self.osx_plat_re.match(plat)
+            if m:
+                osx_version, arch = m.groups()
+                # intel means i386 and x86_64
+                if arch == 'intel':
+                    for a in ('i386', 'x86_64'):
+                        new_plats.append("{}_{}".format(osx_version, a))
+                # universal means 32/64b x86 and ppc
+                elif arch == 'universal':
+                    for a in ('i386', 'x86_64', 'ppc', 'ppc64'):
+                        new_plats.append("{}_{}".format(osx_version, a))
+        return new_plats
 
     def support_index_min(self, tags=None):
         """

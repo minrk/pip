@@ -103,6 +103,24 @@ class TestWheelFile(object):
         assert w.abis == ['abi1', 'abi2']
         assert w.plats == ['any']
 
+    def test_wheel_pattern_osx_intel(self):
+        w = wheel.Wheel('simple-1.1-py2-abi-macosx_10_9_intel.whl')
+        assert w.plats == [
+            'macosx_10_9_intel',
+            'macosx_10_9_i386',
+            'macosx_10_9_x86_64',
+        ]
+
+    def test_wheel_pattern_osx_universal(self):
+        w = wheel.Wheel('simple-1.1-py2-abi-macosx_10_9_universal.whl')
+        assert w.plats == [
+            'macosx_10_9_universal',
+            'macosx_10_9_i386',
+            'macosx_10_9_x86_64',
+            'macosx_10_9_ppc',
+            'macosx_10_9_ppc64',
+        ]
+
     def test_wheel_with_build_tag(self):
         # pip doesn't do anything with build tags, but theoretically, we might
         # see one, in this case the build tag = '4'
