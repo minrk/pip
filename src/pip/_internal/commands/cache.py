@@ -6,6 +6,7 @@ import pip._internal.utils.filesystem as filesystem
 from pip._internal.cli.base_command import Command
 from pip._internal.cli.status_codes import ERROR, SUCCESS
 from pip._internal.exceptions import CommandError, PipError
+from pip._internal.utils.logging import VERBOSE
 from pip._internal.utils.typing import MYPY_CHECK_RUNNING
 
 if MYPY_CHECK_RUNNING:
@@ -188,7 +189,7 @@ class CacheCommand(Command):
 
         for filename in files:
             os.unlink(filename)
-            logger.debug('Removed %s', filename)
+            logger.log(VERBOSE, 'Removed %s', filename)
         logger.info('Files removed: %s', len(files))
 
     def purge_cache(self, options, args):
